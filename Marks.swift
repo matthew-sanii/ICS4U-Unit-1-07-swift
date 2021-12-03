@@ -1,7 +1,3 @@
-
-
-
-
 import Foundation
 
 // Get the file path/filename from the command line. Needs to be provided after "-path"
@@ -14,57 +10,46 @@ guard let secondPath = UserDefaults.standard.string(forKey: "path2") else {
     exit(1)
 }
 
-let fileUrl = URL(fileURLWithPath: firstPath)
-print(fileUrl)
+let fileUrl1 = URL(fileURLWithPath: firstPath)
+let fileUrl2 = URL(fileURLWithPath: secondPath)
+print(fileUrl1)
+print(fileUrl2)
 
-guard FileManager.default.fileExists(atPath: fileUrl.firstPath) else {
-    print("File expected at \(fileUrl.absoluteString) is missing.")
+guard FileManager.default.fileExists(atPath: fileUrl1.path) else {
+    print("File expected at \(fileUrl1.absoluteString) is missing.")
     exit(1)
 }
-guard FileManager.default.fileExists(atPath: fileUrl.secondPath) else {
-    print("File expected at \(fileUrl.absoluteString) is missing.")
+guard FileManager.default.fileExists(atPath: fileUrl2.path) else {
+    print("File expected at \(fileUrl2.absoluteString) is missing.")
     exit(1)
 }
 // open the file for reading
-guard let filePointer: UnsafeMutablePointer<FILE> = fopen(fileUrl.path, "r") else {
-    preconditionFailure("Could not open file at \(fileUrl.absoluteString)")
+guard let firstFilePointer: UnsafeMutablePointer<FILE> = fopen(fileUrl1.path, "r") else {
+    preconditionFailure("Could not open file at \(fileUrl1.absoluteString)")
 }
-
+guard let secondFilePointer: UnsafeMutablePointer<FILE> = fopen(fileUrl2.path, "r") else {
+    preconditionFailure("Could not open file at \(fileUrl2.absoluteString)")
+}
 var lineByteArrayPointer: UnsafeMutablePointer<CChar>?
 var lineCap: Int = 0
-var bytesRead = getline(&lineByteArrayPointer, &lineCap, filePointer)
+var bytesRead1 = getline(&lineByteArrayPointer, &lineCap, firstFilePointer)
+var bytesRead2 = getline(&lineByteArrayPointer, &lineCap, secondFilePointer)
 
 defer {
-fclose(filePointer)
+fclose(firstFilePointer)
+fclose(secondFilePointer)
 }
 
-var list = [Int]()
+var list = Array(count: bytesRead1, Array(count: bytesRead2))
+list[0][0].append("")
+let bytesTotal1 = bytesRead1
+let bytesTotal2 = bytesRead2
 
-while bytesRead > 0 {
+while bytesRead1 > 0 {
     let lineAsString = String.init(cString: lineByteArrayPointer!)
-    let value = Int((lineAsString).trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0
-    list.append(value)
-    bytesRead = getline(&lineByteArrayPointer, &lineCap, filePointer)
+    let value = String((lineAsString).trimmingCharacters(in: .whitespacesAndNewlines))
+    list[0][bytesTotal1].append(value)
+    bytesRead1 = getline(&lineByteArrayPointer, &lineCap, firstFilePointer)
 }
 
 print(list)
-list.sort()
-print("The mean is:", mean(numbers: list))
-print("The median is:", calculateMedian(array: list))
-
-func mean(numbers: [Int]) -> Int {
-    var total: Int = 0
-    for number in numbers {
-        total += Int(number)
-    }
-    return total / Int(numbers.count)
-}
-
-func calculateMedian(array: [Int]) -> Float {
-    let sorted = array.sorted()
-    if sorted.count % 2 == 0 {
-        return Float((sorted[(sorted.count / 2)] + sorted[(sorted.count / 2) - 1]) / 2)
-    } else {
-        return Float(sorted[(sorted.count - 1) / 2])
-    }
-}
