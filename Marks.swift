@@ -40,16 +40,33 @@ fclose(firstFilePointer)
 fclose(secondFilePointer)
 }
 
-var list = Array(count: bytesRead1, Array(count: bytesRead2))
+var list = [[String]]()
+var list3 = [String]()
 list[0][0].append("")
-let bytesTotal1 = bytesRead1
-let bytesTotal2 = bytesRead2
 
 while bytesRead1 > 0 {
     let lineAsString = String.init(cString: lineByteArrayPointer!)
     let value = String((lineAsString).trimmingCharacters(in: .whitespacesAndNewlines))
-    list[0][bytesTotal1].append(value)
+    list3.append(value)
     bytesRead1 = getline(&lineByteArrayPointer, &lineCap, firstFilePointer)
+}
+list.append(list3)
+
+while bytesRead2 > 0 {
+    var list2 = [String]()
+    let lineAsString2 = String.init(cString: lineByteArrayPointer!)
+    let value2 = String((lineAsString2).trimmingCharacters(in: .whitespacesAndNewlines))
+    list2.append(value2)
+    for _ in list {
+        let mark = Int.random(in: 0...10)
+        let marks = Float(mark)
+        let deviate = Float.random(in: 0...3)
+        let deviation = 75 + (marks * deviate)
+        let marked = Int(round(deviation))
+        let value3 = String(marked)
+        list2.append(value3)
+    }
+    list.append(list2)
 }
 
 print(list)
