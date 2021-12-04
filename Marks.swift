@@ -75,8 +75,25 @@ while bytesRead2 > 0 {
     list.append(list2)
     bytesRead2 = getline(&lineByteArrayPointer2, &lineCap, secondFilePointer)
 }
-print(list[0])
+
+size += 1
+var arrayAsString = ""
+var row = 0
 while size != 0 {
-    print(list[1 + (maxSize - size)])
+    let rowAsString = list[row].joined(separator: ", ")
     size -= 1
+    row += 1
+    arrayAsString += rowAsString
+    arrayAsString += "\n"
+}
+print(arrayAsString)
+
+let fileManager = FileManager.default
+do {
+    let path = try fileManager.url(for: .documentDirectory, in: .allDomainsMask,
+                                appropriateFor: nil, create: true)
+    let fileURL = path.appendingPathComponent("marks.csv")
+    try arrayAsString.write(to: fileURL, atomically: true, encoding: .utf8)
+} catch {
+    print("error creating file")
 }
