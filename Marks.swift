@@ -30,10 +30,11 @@ guard let firstFilePointer: UnsafeMutablePointer<FILE> = fopen(fileUrl1.path, "r
 guard let secondFilePointer: UnsafeMutablePointer<FILE> = fopen(fileUrl2.path, "r") else {
     preconditionFailure("Could not open file at \(fileUrl2.absoluteString)")
 }
-var lineByteArrayPointer: UnsafeMutablePointer<CChar>?
+var lineByteArrayPointer1: UnsafeMutablePointer<CChar>?
+var lineByteArrayPointer2: UnsafeMutablePointer<CChar>?
 var lineCap: Int = 0
-var bytesRead1 = getline(&lineByteArrayPointer, &lineCap, firstFilePointer)
-var bytesRead2 = getline(&lineByteArrayPointer, &lineCap, secondFilePointer)
+var bytesRead1 = getline(&lineByteArrayPointer1, &lineCap, firstFilePointer)
+var bytesRead2 = getline(&lineByteArrayPointer2, &lineCap, secondFilePointer)
 
 defer {
 fclose(firstFilePointer)
@@ -42,31 +43,40 @@ fclose(secondFilePointer)
 
 var list = [[String]]()
 var list3 = [String]()
-list[0][0].append("")
+var size = 0
+list3.append(" ")
 
 while bytesRead1 > 0 {
-    let lineAsString = String.init(cString: lineByteArrayPointer!)
+    let lineAsString = String.init(cString: lineByteArrayPointer1!)
     let value = String((lineAsString).trimmingCharacters(in: .whitespacesAndNewlines))
     list3.append(value)
-    bytesRead1 = getline(&lineByteArrayPointer, &lineCap, firstFilePointer)
+    bytesRead1 = getline(&lineByteArrayPointer1, &lineCap, firstFilePointer)
+    size += 1
 }
-list.append(list3)
 
+let maxSize = size
+list.append(list3)
 while bytesRead2 > 0 {
     var list2 = [String]()
-    let lineAsString2 = String.init(cString: lineByteArrayPointer!)
+    let lineAsString2 = String.init(cString: lineByteArrayPointer2!)
     let value2 = String((lineAsString2).trimmingCharacters(in: .whitespacesAndNewlines))
     list2.append(value2)
-    for _ in list {
-        let mark = Int.random(in: 0...10)
+    while size > 0 {
+        let mark = Int.random(in: 1...10)
         let marks = Float(mark)
-        let deviate = Float.random(in: 0...3)
+        let deviate = Float.random(in: 0.1...3)
         let deviation = 75 + (marks * deviate)
         let marked = Int(round(deviation))
         let value3 = String(marked)
         list2.append(value3)
+        size -= 1
     }
+    size += maxSize
     list.append(list2)
+    bytesRead2 = getline(&lineByteArrayPointer2, &lineCap, secondFilePointer)
 }
-
-print(list)
+print(list[0])
+while size != 0 {
+    print(list[1 + (maxSize - size)])
+    size -= 1
+}
