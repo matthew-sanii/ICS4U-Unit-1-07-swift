@@ -86,12 +86,13 @@ while size != 0 {
     arrayAsString += rowAsString
     arrayAsString += "\n"
 }
-print(arrayAsString)
+arrayAsString = arrayAsString.appending(arrayAsString)
 
 let fileManager = FileManager.default
 do {
-    let path = try fileManager.url(for: .documentDirectory, in: .allDomainsMask,
-                                appropriateFor: nil, create: true)
+    let path = try fileManager.url(for: .documentsDirectory,
+          in: .allDomainsMask, appropriateFor: nil, create: false)
+    print(path)
     let fileURL = path.appendingPathComponent("marks.csv")
     try arrayAsString.write(to: fileURL, atomically: true, encoding: .utf8)
 } catch {
