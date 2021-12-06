@@ -9,11 +9,18 @@ guard let secondPath = UserDefaults.standard.string(forKey: "path2") else {
     print("Path not provided.")
     exit(1)
 }
+// Get filename of file created array will be exported to.
+guard let thirdPath = UserDefaults.standard.string(forKey: "path3") else {
+    print("Output path not provided.")
+    exit(1)
+}
 
 let fileUrl1 = URL(fileURLWithPath: firstPath)
 let fileUrl2 = URL(fileURLWithPath: secondPath)
+let fileUrl3 = URL(fileURLWithPath: thirdPath)
 print(fileUrl1)
 print(fileUrl2)
+print(fileUrl3)
 
 guard FileManager.default.fileExists(atPath: fileUrl1.path) else {
     print("File expected at \(fileUrl1.absoluteString) is missing.")
@@ -23,6 +30,11 @@ guard FileManager.default.fileExists(atPath: fileUrl2.path) else {
     print("File expected at \(fileUrl2.absoluteString) is missing.")
     exit(1)
 }
+guard FileManager.default.fileExists(atPath: fileUrl3.path) else {
+    print("File expected at \(fileUrl3.absoluteString) is missing.")
+    exit(1)
+}
+
 // open the file for reading
 guard let firstFilePointer: UnsafeMutablePointer<FILE> = fopen(fileUrl1.path, "r") else {
     preconditionFailure("Could not open file at \(fileUrl1.absoluteString)")
@@ -33,6 +45,21 @@ guard let secondFilePointer: UnsafeMutablePointer<FILE> = fopen(fileUrl2.path, "
 var lineByteArrayPointer1: UnsafeMutablePointer<CChar>?
 var lineByteArrayPointer2: UnsafeMutablePointer<CChar>?
 var lineCap: Int = 0
+
+func sizeOfFile(atPath path: URL) -> Int64? {
+    guard let attrs = try? attributesOfItem(atPath: path) else {
+        return nil
+    }
+    return attrs.count as? Int64
+}
+
+let fileSize1 = sizeOfFile(atPath: fileUrl1)
+let fileSize2 = sizeOfFile(atPath: fileUrl2)
+if fileSize1 == nil || fileSize2 == nil {
+    print("One of input files are empty, please make sure they have data")
+    exit(1)
+}
+
 var bytesRead1 = getline(&lineByteArrayPointer1, &lineCap, firstFilePointer)
 var bytesRead2 = getline(&lineByteArrayPointer2, &lineCap, secondFilePointer)
 
@@ -64,7 +91,7 @@ while bytesRead2 > 0 {
     while size > 0 {
         let mark = Int.random(in: 1...10)
         let marks = Float(mark)
-        let deviate = Float.random(in: 0.1...3)
+        let deviate = Float.random(in: -3...3)
         let deviation = 75 + (marks * deviate)
         let marked = Int(round(deviation))
         let value3 = String(marked)
@@ -86,15 +113,10 @@ while size != 0 {
     arrayAsString += rowAsString
     arrayAsString += "\n"
 }
-arrayAsString = arrayAsString.appending(arrayAsString)
 
-let fileManager = FileManager.default
+let manager = FileManager.default
 do {
-    let path = try fileManager.url(for: .documentsDirectory,
-          in: .allDomainsMask, appropriateFor: nil, create: false)
-    print(path)
-    let fileURL = path.appendingPathComponent("marks.csv")
-    try arrayAsString.write(to: fileURL, atomically: true, encoding: .utf8)
+    try arrayAsString.write(to: fileUrl3, atomically: true, encoding: .utf8)
 } catch {
     print("error creating file")
 }
