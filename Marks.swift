@@ -1,5 +1,12 @@
 import Foundation
 
+public extension URL {
+    var fileSize: Int? {
+        let value = try? resourceValues(forKeys: [.fileSizeKey])
+        return value?.fileSize
+    }
+}
+
 // Get the file path/filename from the command line. Needs to be provided after "-path"
 guard let firstPath = UserDefaults.standard.string(forKey: "path1") else {
     print("Path not provided.")
@@ -15,13 +22,15 @@ guard let thirdPath = UserDefaults.standard.string(forKey: "path3") else {
     exit(1)
 }
 
-let fileUrl1 = URL(fileURLWithPath: firstPath)
-let fileUrl2 = URL(fileURLWithPath: secondPath)
-let fileUrl3 = URL(fileURLWithPath: thirdPath)
+let fileUrl1: URL = URL(fileURLWithPath: firstPath)
+let fileUrl2: URL = URL(fileURLWithPath: secondPath)
+let fileUrl3: URL = URL(fileURLWithPath: thirdPath)
 print(fileUrl1)
 print(fileUrl2)
 print(fileUrl3)
-
+if fileSize == nil {
+    exit(1)
+}
 guard FileManager.default.fileExists(atPath: fileUrl1.path) else {
     print("File expected at \(fileUrl1.absoluteString) is missing.")
     exit(1)
@@ -42,23 +51,10 @@ guard let firstFilePointer: UnsafeMutablePointer<FILE> = fopen(fileUrl1.path, "r
 guard let secondFilePointer: UnsafeMutablePointer<FILE> = fopen(fileUrl2.path, "r") else {
     preconditionFailure("Could not open file at \(fileUrl2.absoluteString)")
 }
+
 var lineByteArrayPointer1: UnsafeMutablePointer<CChar>?
 var lineByteArrayPointer2: UnsafeMutablePointer<CChar>?
 var lineCap: Int = 0
-
-func sizeOfFile(atPath path: URL) -> Int64? {
-    guard let attrs = try? attributesOfItem(atPath: path) else {
-        return nil
-    }
-    return attrs.count as? Int64
-}
-
-let fileSize1 = sizeOfFile(atPath: fileUrl1)
-let fileSize2 = sizeOfFile(atPath: fileUrl2)
-if fileSize1 == nil || fileSize2 == nil {
-    print("One of input files are empty, please make sure they have data")
-    exit(1)
-}
 
 var bytesRead1 = getline(&lineByteArrayPointer1, &lineCap, firstFilePointer)
 var bytesRead2 = getline(&lineByteArrayPointer2, &lineCap, secondFilePointer)
