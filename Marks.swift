@@ -1,12 +1,5 @@
 import Foundation
 
-public extension URL {
-    var fileSize: Int? {
-        let value = try? resourceValues(forKeys: [.fileSizeKey])
-        return value?.fileSize
-    }
-}
-
 // Get the file path/filename from the command line. Needs to be provided after "-path"
 guard let firstPath = UserDefaults.standard.string(forKey: "path1") else {
     print("Path not provided.")
@@ -28,9 +21,7 @@ let fileUrl3: URL = URL(fileURLWithPath: thirdPath)
 print(fileUrl1)
 print(fileUrl2)
 print(fileUrl3)
-if fileSize == nil {
-    exit(1)
-}
+
 guard FileManager.default.fileExists(atPath: fileUrl1.path) else {
     print("File expected at \(fileUrl1.absoluteString) is missing.")
     exit(1)
