@@ -18,9 +18,6 @@ guard let thirdPath = UserDefaults.standard.string(forKey: "path3") else {
 let fileUrl1: URL = URL(fileURLWithPath: firstPath)
 let fileUrl2: URL = URL(fileURLWithPath: secondPath)
 let fileUrl3: URL = URL(fileURLWithPath: thirdPath)
-print(fileUrl1)
-print(fileUrl2)
-print(fileUrl3)
 
 guard FileManager.default.fileExists(atPath: fileUrl1.path) else {
     print("File expected at \(fileUrl1.absoluteString) is missing.")
@@ -49,6 +46,10 @@ var lineCap: Int = 0
 
 var bytesRead1 = getline(&lineByteArrayPointer1, &lineCap, firstFilePointer)
 var bytesRead2 = getline(&lineByteArrayPointer2, &lineCap, secondFilePointer)
+if bytesRead1 == -1 || bytesRead2 == -1 {
+    print("One of the input files were empty.")
+    exit(0)
+}
 
 defer {
 fclose(firstFilePointer)
@@ -76,7 +77,7 @@ while bytesRead2 > 0 {
     let value2 = String((lineAsString2).trimmingCharacters(in: .whitespacesAndNewlines))
     list2.append(value2)
     while size > 0 {
-        let mark = Int.random(in: 1...10)
+        let mark = Int.random(in: 1...8)
         let marks = Float(mark)
         let deviate = Float.random(in: -3...3)
         let deviation = 75 + (marks * deviate)
